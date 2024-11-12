@@ -1,0 +1,1 @@
+I thought it was just general fatigue but copying over the previous project as a starting point really slowed me down last time. I'm glad I built from scratch this time only adding pieces as I needed them. kind of sad about not having a lib to keep my lessons learned in though. no time for it.
