@@ -1,4 +1,4 @@
-import type {XY} from '../../shared/2d.ts'
+import type {XY} from '../../shared/types/2d.ts'
 import type {Cam} from '../cam.ts'
 
 export class PointerPoller {

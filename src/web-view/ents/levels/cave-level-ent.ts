@@ -1,33 +1,29 @@
-import type {Box} from '../../../shared/2d.ts'
 import {paletteBackground, spacePx} from '../../../shared/theme.ts'
+import type {Box} from '../../../shared/types/2d.ts'
 import type {Game} from '../../game.ts'
 import type {Layer} from '../../layer.ts'
 import {DiceBeltEnt} from '../dice-belt-ent.ts'
 import {EID} from '../eid.ts'
 import {HPOrbEnt} from '../hp-orb-ent.ts'
-import {MonsterEnt} from '../monster-ent.ts'
-import {Monster} from '../monster.ts'
+import {PathNodeEnt} from '../path-node-ent.ts'
 import {PathStatusEnt} from '../path-status-ent.ts'
+import {GameOverLevelEnt} from './game-over-level-ent.ts'
 
-export type DungeonLevelEnt = Box & {
+export type CaveLevelEnt = Box & {
   readonly eid: EID
+  ent: PathNodeEnt
   layer: Layer
-  readonly type: 'DungeonLevel'
+  readonly type: 'CaveLevel'
 }
 
-export function DungeonLevelEnt(game: Game): DungeonLevelEnt {
+export function CaveLevelEnt(game: Game): CaveLevelEnt {
   const {zoo} = game
   // state.ctrl.allowContextMenu = false
   zoo.clear()
-  zoo.replace(
-    game.cursor,
-    HPOrbEnt(game),
-    DiceBeltEnt(game),
-    PathStatusEnt(game)
-  )
-  const node = game.path.nodes[game.path.node]!
-  if (node.type === 'Battle') zoo.replace(MonsterEnt(game, node.monster))
-  // zoo.replace(game.path.nodes[game.path.node].ent)
+  const belt = DiceBeltEnt(game)
+  const ent = PathNodeEnt(game, game.path.nodes[game.path.node]!, belt)
+  ent.node.updated = game.now
+  zoo.replace(game.cursor, HPOrbEnt(game), belt, PathStatusEnt(game), ent)
   // state.p1.hp = playerDefaultHP
   // state.p1.score = 0
   // state.p1.x = state.p1.y = 4800
@@ -35,7 +31,8 @@ export function DungeonLevelEnt(game: Game): DungeonLevelEnt {
   return {
     eid: EID(),
     layer: 'Level',
-    type: 'DungeonLevel',
+    ent,
+    type: 'CaveLevel',
     x: 0,
     y: 0,
     w: game.cam.minWH.w,
@@ -43,8 +40,8 @@ export function DungeonLevelEnt(game: Game): DungeonLevelEnt {
   }
 }
 
-export function dungeonLevelEntDraw(
-  _lvl: Readonly<DungeonLevelEnt>,
+export function caveLevelEntDraw(
+  _lvl: Readonly<CaveLevelEnt>,
   game: Readonly<Game>
 ): void {
   const {img, c2d, cam} = game
@@ -87,7 +84,7 @@ export function dungeonLevelEntDraw(
   // c2d.closePath()
 }
 
-export function dungeonLevelEntUpdate(lvl: DungeonLevelEnt, game: Game): void {
+export function caveLevelEntUpdate(lvl: CaveLevelEnt, game: Game): void {
   // if (
   //   (state.init && state.p1.t2 !== state.author.t2) ||
   //   state.completed ||

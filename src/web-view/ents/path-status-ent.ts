@@ -1,5 +1,5 @@
-import type {Box} from '../../shared/2d.ts'
 import {spacePx} from '../../shared/theme.ts'
+import type {Box} from '../../shared/types/2d.ts'
 import type {Game, InitGame} from '../game.ts'
 import type {Layer} from '../layer.ts'
 import {EID} from './eid.ts'

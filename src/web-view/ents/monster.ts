@@ -1,4 +1,5 @@
 import type {Random} from '../../shared/types/random.ts'
+import type {Game, InitGame} from '../game.ts'
 
 export type Monster = {
   hp: number
@@ -58,7 +59,6 @@ const monsterModifier = [
   'Prismatic',
   'Red',
   'Swift',
-  'Tar',
   'Venomous',
   'Volcanic',
   'Warped',
@@ -81,18 +81,21 @@ const monsterClass = [
   'Witch'
 ] as const
 
-export function Monster(rnd: Random): Monster {
-  return {
-    class: monsterClass[Math.trunc(rnd.num * monsterClass.length)]!,
+export function Monster(game: InitGame): Monster {
+  const monster = {
+    class: monsterClass[Math.trunc(game.rnd.num * monsterClass.length)]!,
     dmg: 0,
-    lvl: 1 + Math.ceil(rnd.num * 10),
-    modifier: monsterModifier[Math.trunc(rnd.num * monsterModifier.length)]!,
-    species: monsterSpecies[Math.trunc(rnd.num * monsterSpecies.length)]!,
+    lvl: 1 + Math.ceil(game.p1.lvl + 1 + game.rnd.num * 3),
+    modifier:
+      monsterModifier[Math.trunc(game.rnd.num * monsterModifier.length)]!,
+    species: monsterSpecies[Math.trunc(game.rnd.num * monsterSpecies.length)]!,
     hp: 0
   }
+  monster.hp = rollMaxHP(monster, game.rnd)
+  return monster
 }
 
-export function rollMaxHP(monster: Readonly<Monster>, rnd: Random): number {
+function rollMaxHP(monster: Readonly<Monster>, rnd: Random): number {
   let hp = 2 + Math.ceil(rnd.num * 10) + monster.lvl * Math.ceil(10 * rnd.num)
   switch (monster.class) {
     case 'Alchemist':
@@ -182,9 +185,6 @@ export function rollMaxHP(monster: Readonly<Monster>, rnd: Random): number {
       break
     case 'Swift':
       hp += 7
-      break
-    case 'Tar':
-      hp += 12
       break
     case 'Venomous':
       hp += 8
@@ -281,7 +281,7 @@ export function rollMaxHP(monster: Readonly<Monster>, rnd: Random): number {
 }
 
 // to-do: make this different than hp.
-function rollDmg(monster: Readonly<Monster>, rnd: Random): number {
+export function rollDmg(monster: Readonly<Monster>, rnd: Random): number {
   let dmg = 2 + Math.ceil(rnd.num * 10) + monster.lvl * Math.ceil(10 * rnd.num)
   switch (monster.class) {
     case 'Alchemist':
@@ -371,9 +371,6 @@ function rollDmg(monster: Readonly<Monster>, rnd: Random): number {
       break
     case 'Swift':
       dmg += 7
-      break
-    case 'Tar':
-      dmg += 12
       break
     case 'Venomous':
       dmg += 8

@@ -1,7 +1,7 @@
-import type {DevvitMessage, WebViewMessage} from '../../shared/message.ts'
+import type {DevvitMessage, WebViewMessage} from '../../shared/types/message.ts'
 import {Random} from '../../shared/types/random.ts'
 import {Path} from '../ents/path.ts'
-import type {ConstructedGame, Game, InitGame} from '../game.ts'
+import {type ConstructedGame, isInitGame} from '../game.ts'
 
 export class MessageProc {
   /** mutable reference. */
@@ -32,7 +32,8 @@ export class MessageProc {
       case 'Init':
         this.#game.debug = msg.debug
         this.#game.rnd = new Random(msg.seed)
-        this.#game.path = Path(this.#game.rnd)
+        if (!isInitGame(this.#game)) throw Error('no init game')
+        this.#game.path = Path(this.#game)
         break
 
       default:

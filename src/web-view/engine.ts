@@ -1,15 +1,9 @@
-import {paletteBackground} from '../shared/theme.ts'
-import {Random} from '../shared/types/random.ts'
 import {type UTCMillis, utcMillisNow} from '../shared/types/time.ts'
 import {Assets} from './assets.ts'
 import {Cam} from './cam.ts'
-import type {Draw} from './draw.ts'
 import {CursorEnt} from './ents/cursor-ent.ts'
-import {Path} from './ents/levels/dungeon-level-ent.ts'
-import {
-  TitleLevelEnt,
-  titleLevelEntDraw
-} from './ents/levels/title-level-ent.ts'
+import {Dice} from './ents/dice.ts'
+import {TitleLevelEnt} from './ents/levels/title-level-ent.ts'
 import {Zoo} from './ents/zoo.ts'
 import {type ConstructedGame, isGame, isLoadedGame} from './game.ts'
 import {Input} from './input/input.ts'
@@ -41,6 +35,7 @@ export class Engine {
       cam,
       canvas,
       ctrl,
+      dice: Dice(),
       now: 0 as UTCMillis,
       p1: P1(),
       zoo: new Zoo()

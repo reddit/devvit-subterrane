@@ -1,10 +1,10 @@
-import {type Box, type WH, type XY, boxHits} from '../../shared/2d.js'
 import {spacePx} from '../../shared/theme.js'
+import {type Box, type WH, type XY, boxHits} from '../../shared/types/2d.js'
 import type {Game, LoadedGame} from '../game.js'
 import type {Layer} from '../layer.js'
 import {EID} from './eid.js'
 
-export type Cursor = Box & {
+export type CursorEnt = Box & {
   hidden: boolean
   layer: Layer
   readonly type: 'Cursor'
@@ -13,7 +13,7 @@ export type Cursor = Box & {
 
 const hitbox: Readonly<Box> = {x: 20, y: 1, w: 7, h: 7}
 
-export function CursorEnt(game: LoadedGame): Cursor {
+export function CursorEnt(game: LoadedGame): CursorEnt {
   return {
     eid: EID(),
     hidden: true,
@@ -27,7 +27,7 @@ export function CursorEnt(game: LoadedGame): Cursor {
 }
 
 export function cursorEntHits(
-  cursor: Readonly<Cursor>,
+  cursor: Readonly<CursorEnt>,
   box: Readonly<XY & Partial<WH>>,
   game: Readonly<Game>
 ): boolean {
@@ -53,7 +53,7 @@ export function cursorEntHits(
 }
 
 export function cursorEntDraw(
-  cursor: Readonly<Cursor>,
+  cursor: Readonly<CursorEnt>,
   game: Readonly<Game>
 ): void {
   if (cursor.hidden) return
@@ -71,7 +71,7 @@ export function cursorEntDraw(
   )
 }
 
-export function cursorUpdate(cursor: Cursor, game: Game): void {
+export function cursorUpdate(cursor: CursorEnt, game: Game): void {
   // to-do: this isn't hiding if transitioning from desktop to mobile.
   if (game.ctrl.pointOn && game.ctrl.pointType === 'mouse')
     cursor.hidden = false

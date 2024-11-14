@@ -1,15 +1,15 @@
 // biome-ignore lint/style/useImportType: Devvit is a functional dependency of JSX.
 import {Devvit} from '@devvit/public-api'
 import type {JSONValue} from '@devvit/public-api'
-import type {DevvitMessage, WebViewMessage} from '../shared/message.js'
-import {T3, anonSnoovatarURL, anonUsername} from '../shared/tid.js'
+import type {DevvitMessage, WebViewMessage} from '../shared/types/message.js'
+import {T3, anonSnoovatarURL, anonUsername} from '../shared/types/tid.js'
 import {redisPostQuery} from './redis.js'
 import {useState2} from './use-state2.js'
 
 export function App(ctx: Devvit.Context): JSX.Element {
   if (!ctx.postId) throw Error('no post ID')
   const t3 = T3(ctx.postId)
-  const debug = 'changeme' in ctx.debug
+  const debug = 'subterrane' in ctx.debug
 
   const [[username, snoovatarURL]] = useState2(async () => {
     const user = await ctx.reddit.getCurrentUser()

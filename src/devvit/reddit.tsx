@@ -2,6 +2,8 @@ import {type Context, Devvit, type JobContext} from '@devvit/public-api'
 import {Preview} from './preview.tsx'
 import {redisPostCreate} from './redis.ts'
 
+Devvit.configure({redditAPI: true})
+
 /** create a new post as the viewer. */
 export async function redditCreatePost(
   ctx: Context | JobContext,
@@ -13,7 +15,7 @@ export async function redditCreatePost(
   const post = await ctx.reddit.submitPost({
     preview: <Preview />,
     subredditName: ctx.subredditName,
-    title: `Changeme Post #changeme`
+    title: `Subterrane Cave #changeme`
   })
 
   await redisPostCreate(ctx.redis, post)
@@ -22,9 +24,11 @@ export async function redditCreatePost(
   if (mode === 'UI' && 'ui' in ctx) {
     ctx.ui.showToast({
       appearance: 'success',
-      text: `Changeme post #changeme set.`
+      text: `Subterrane Cave #changeme posted.`
     })
     ctx.ui.navigateTo(post)
   }
-  console.log(`changeme match #changeme set by ${ctx.userId ?? 'changeme'}`)
+  console.log(
+    `subterrane cave #changeme posted by ${ctx.userId ?? 'subterranegame'}`
+  )
 }

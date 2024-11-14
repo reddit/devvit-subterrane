@@ -1,6 +1,6 @@
-import type {Post, RedisClient} from '@devvit/public-api'
-import type {T3} from '../shared/tid.js'
+import {Devvit, type Post, type RedisClient} from '@devvit/public-api'
 import {randomEndSeed} from '../shared/types/random.js'
+import type {T3} from '../shared/types/tid.js'
 
 /** records are as independent and immutable as possible. */
 
@@ -22,6 +22,8 @@ export const gameVersion: number = 0
 
 /** PostRecord by post ID; post look up. */
 const postByT3Key: string = 'post_by_t3'
+
+Devvit.configure({redis: true})
 
 export async function redisPostCreate(
   redis: RedisClient,

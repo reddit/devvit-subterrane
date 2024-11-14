@@ -1,4 +1,4 @@
-import {type WH, type XY, boxHits} from '../shared/2d.ts'
+import {type WH, type XY, boxHits} from '../shared/types/2d.ts'
 
 export class Cam {
   minWH: WH = {w: 256, h: 256} // ints.

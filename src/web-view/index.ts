@@ -1,4 +1,4 @@
-import type {DevvitMessage} from '../shared/message.js'
+import type {DevvitMessage} from '../shared/types/message.js'
 import {randomEndSeed} from '../shared/types/random.js'
 import {Engine} from './engine.js'
 
@@ -7,7 +7,7 @@ await engine.start()
 
 const noDevvit = location.port === '1234'
 
-console.log('changeme v0.0.0')
+console.log('subterrane v0.0.0')
 
 if (noDevvit) {
   const delay = Math.random() * 1_000

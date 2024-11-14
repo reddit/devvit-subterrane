@@ -4,6 +4,7 @@ import type {Assets} from './assets.ts'
 import type {Cam} from './cam.ts'
 import type {C2D, Canvas, Draw} from './draw.ts'
 import type {CursorEnt} from './ents/cursor-ent.ts'
+import type {Dice} from './ents/dice.ts'
 import type {Path} from './ents/path.ts'
 import type {Zoo} from './ents/zoo.ts'
 import type {DefaultButton, Input} from './input/input.ts'
@@ -16,12 +17,13 @@ export type ConstructedGame = {
   canvas: Canvas
   ctrl: Input<DefaultButton>
   debug: boolean
+  dice: Dice
   now: UTCMillis
   p1: P1
   zoo: Zoo
 } & Partial<Loaded> &
   Partial<Init> &
-  Partial<Drawable> & {draw?: Omit<Draw, 'c2d'> | undefined}
+  Partial<Drawable>
 export type LoadedGame = ConstructedGame & Loaded
 export type InitGame = ConstructedGame & Init
 export type Game = ConstructedGame & Loaded & Init & Drawable

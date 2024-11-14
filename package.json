@@ -15,14 +15,14 @@
     "node": ">=22.6"
   },
   "license": "BSD-3-Clause",
-  "name": "changeme",
+  "name": "subterrane",
   "private": true,
   "scripts": {
     "build": "esbuild --bundle --format=esm --log-level=info --outfile=webroot/index.js src/web-view/index.ts",
     "clean": "rm -rf dist webroot/index.js",
-    "devvit:install": "npm run clean && npm run build && devvit upload && devvit install r/stephenoid",
-    "devvit:logs": "devvit logs --log-runtime r/changemedev",
-    "devvit:playtest": "devvit playtest --log-runtime stephenoid|grep --invert --line-buffered '\\[api\\]'",
+    "devvit:install": "npm run clean && npm run build && devvit upload && devvit install r/subterrane",
+    "devvit:logs": "devvit logs --log-runtime r/subterranedev",
+    "devvit:playtest": "devvit playtest --log-runtime r/subterranedev|grep --invert --line-buffered '\\[api\\]'",
     "format": "npm run formatter -- --fix",
     "formatter": "biome check --error-on-warnings",
     "playtest": "trap 'kill 0' exit; npm start& npm run build -- --watch=forever& npm run devvit:playtest& wait",

@@ -1,36 +1,43 @@
 import {paletteBackground, spacePx} from '../../../shared/theme.ts'
 import type {Box} from '../../../shared/types/2d.ts'
 import {drawText} from '../../draw.ts'
-import type {ConstructedGame, Game} from '../../game.ts'
+import type {Game, LoadedGame} from '../../game.ts'
 import type {Layer} from '../../layer.ts'
 import {cursorEntHits} from '../cursor-ent.ts'
 import {EID} from '../eid.ts'
 import {CaveLevelEnt} from './cave-level-ent.ts'
-import {GameOverLevelEnt} from './game-over-level-ent.ts'
 
-export type TitleLevelEnt = Box & {
+export type GameOverLevelEnt = Box & {
   readonly eid: EID
   button: Box
   layer: Layer
-  readonly type: 'TitleLevel'
+  readonly type: 'GameOverLevel'
 }
 
 const fontSize: number = 18
 const nativeFontSize: number = 6
 
-export function TitleLevelEnt(game: ConstructedGame): TitleLevelEnt {
+export function GameOverLevelEnt(game: LoadedGame): GameOverLevelEnt {
   const {zoo} = game
   zoo.clear()
   // state.ctrl.allowContextMenu = false
   // state.p1.hp = playerDefaultHP
   // state.p1.score = 0
   // state.p1.x = state.p1.y = 4800
-
+  const buttonW = 128
   return {
     eid: EID(),
     layer: 'Level',
-    type: 'TitleLevel',
-    button: {x: 0, y: 0, w: 96, h: 48},
+    type: 'GameOverLevel',
+    button: {
+      x:
+        game.cam.x +
+        Math.round(game.cam.w / 2 - buttonW / 2) -
+        fontSize / nativeFontSize,
+      y: game.cam.y + spacePx * 12 + game.img.logo.naturalHeight + spacePx * 3,
+      w: buttonW,
+      h: 48
+    },
     x: game.cam.x,
     y: game.cam.y,
     w: game.cam.minWH.w,
@@ -38,8 +45,8 @@ export function TitleLevelEnt(game: ConstructedGame): TitleLevelEnt {
   }
 }
 
-export function titleLevelEntDraw(
-  lvl: Readonly<TitleLevelEnt>,
+export function gameOverLevelEntDraw(
+  lvl: Readonly<GameOverLevelEnt>,
   game: Readonly<Game>
 ): void {
   const {c2d, cam} = game
@@ -81,13 +88,21 @@ export function titleLevelEntDraw(
     cam.y + spacePx * 8
   )
 
+  drawText(c2d, game.p1.hp > 0 ? 'cave cleared' : 'game over', {
+    x: cam.x + Math.trunc(cam.w / 2),
+    y: cam.y + spacePx * 6 + game.img.logo.naturalHeight + spacePx * 4,
+    justify: 'TopCenter',
+    fill: '#eaeaea',
+    size: fontSize
+  })
+
   c2d.beginPath()
   c2d.roundRect(lvl.button.x, lvl.button.y, lvl.button.w, lvl.button.h, spacePx)
   c2d.strokeStyle = '#eaeaea'
   c2d.stroke()
-  drawText(c2d, 'play', {
+  drawText(c2d, 'new cave', {
     x: cam.x + Math.trunc(cam.w / 2),
-    y: cam.y + spacePx * 12 + game.img.logo.naturalHeight + spacePx * 4,
+    y: cam.y + spacePx * 12.75 + game.img.logo.naturalHeight + spacePx * 4,
     justify: 'TopCenter',
     fill: cursorEntHits(game.cursor, lvl.button, game) ? '#990000' : '#eaeaea',
     size: fontSize
@@ -102,9 +117,11 @@ export function titleLevelEntDraw(
   // c2d.closePath()
 }
 
-export function titleLevelEntUpdate(lvl: TitleLevelEnt, game: Game): void {
+export function gameOverLevelEntUpdate(
+  lvl: GameOverLevelEnt,
+  game: Game
+): void {
   const {cam, zoo} = game
-  console.log(cam.w)
   zoo.replace(game.cursor)
   lvl.button.x =
     cam.x + Math.round(cam.w / 2 - lvl.button.w / 2) - fontSize / nativeFontSize

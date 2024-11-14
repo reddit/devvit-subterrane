@@ -1,4 +1,4 @@
-import type {Box, XY} from '../shared/2d.ts'
+import type {Box, XY} from '../shared/types/2d.ts'
 import type {Assets} from './assets.ts'
 
 export type C2D = CanvasRenderingContext2D

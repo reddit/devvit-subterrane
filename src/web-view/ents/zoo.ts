@@ -8,22 +8,26 @@ import {
 } from './dice-belt-ent.ts'
 import type {EID} from './eid.ts'
 import {type HPOrbEnt, hpOrbEntDraw, hpOrbEntUpdate} from './hp-orb-ent.ts'
-import {type ItemEnt, itemEntDraw, itemEntUpdate} from './item-ent.ts'
 import {
-  type DungeonLevelEnt,
-  dungeonLevelEntDraw,
-  dungeonLevelEntUpdate
-} from './levels/dungeon-level-ent.ts'
+  type CaveLevelEnt,
+  caveLevelEntDraw,
+  caveLevelEntUpdate
+} from './levels/cave-level-ent.ts'
+import {
+  type GameOverLevelEnt,
+  gameOverLevelEntDraw,
+  gameOverLevelEntUpdate
+} from './levels/game-over-level-ent.ts'
 import {
   type TitleLevelEnt,
   titleLevelEntDraw,
   titleLevelEntUpdate
 } from './levels/title-level-ent.ts'
 import {
-  type MonsterEnt,
-  monsterEntDraw,
-  monsterEntUpdate
-} from './monster-ent.ts'
+  type PathNodeEnt,
+  pathNodeEntDraw,
+  pathNodeEntUpdate
+} from './path-node-ent.ts'
 import {
   type PathStatusEnt,
   pathStatusEntDraw,
@@ -31,12 +35,12 @@ import {
 } from './path-status-ent.ts'
 
 export type Ent =
+  | CaveLevelEnt
   | CursorEnt
   | DiceBeltEnt
-  | DungeonLevelEnt
+  | GameOverLevelEnt
   | HPOrbEnt
-  | ItemEnt
-  | MonsterEnt
+  | PathNodeEnt
   | PathStatusEnt
   | TitleLevelEnt
 
@@ -62,23 +66,23 @@ export class Zoo {
 
       for (const ent of Object.values(this.#entsByLayer[layer])) {
         switch (ent.type) {
+          case 'CaveLevel':
+            caveLevelEntDraw(ent, game)
+            break
           case 'Cursor':
             cursorEntDraw(ent, game)
             break
           case 'DiceBelt':
             diceBeltEntDraw(ent, game)
             break
-          case 'DungeonLevel':
-            dungeonLevelEntDraw(ent, game)
+          case 'GameOverLevel':
+            gameOverLevelEntDraw(ent, game)
             break
           case 'HPOrb':
             hpOrbEntDraw(ent, game)
             break
-          case 'Item':
-            itemEntDraw(ent, game)
-            break
-          case 'Monster':
-            monsterEntDraw(ent, game)
+          case 'PathNode':
+            pathNodeEntDraw(ent, game)
             break
           case 'PathStatus':
             pathStatusEntDraw(ent, game)
@@ -109,22 +113,22 @@ export class Zoo {
     cursorUpdate(game.cursor, game) // update first to align to input edges.
     for (const ent of this.ents()) {
       switch (ent.type) {
+        case 'CaveLevel':
+          caveLevelEntUpdate(ent, game)
+          break
         case 'Cursor':
           break
         case 'DiceBelt':
           diceBeltEntUpdate(ent, game)
           break
-        case 'DungeonLevel':
-          dungeonLevelEntUpdate(ent, game)
+        case 'GameOverLevel':
+          gameOverLevelEntUpdate(ent, game)
           break
         case 'HPOrb':
           hpOrbEntUpdate(ent, game)
           break
-        case 'Item':
-          itemEntUpdate(ent, game)
-          break
-        case 'Monster':
-          monsterEntUpdate(ent, game)
+        case 'PathNode':
+          pathNodeEntUpdate(ent, game)
           break
         case 'PathStatus':
           pathStatusEntUpdate(ent, game)

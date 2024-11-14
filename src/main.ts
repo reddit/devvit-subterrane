@@ -9,12 +9,10 @@ import {redditCreatePost} from './devvit/reddit.tsx'
 
 const newPostScheduleJob: string = 'NewPostSchedule'
 
-Devvit.configure({redis: true, redditAPI: true})
-
-Devvit.addCustomPostType({name: 'changeme', height: 'regular', render: App})
+Devvit.addCustomPostType({name: 'Cave', height: 'regular', render: App})
 
 Devvit.addMenuItem({
-  label: 'New Changeme Post',
+  label: 'New Subterrane Cave Post',
   location: 'subreddit',
   onPress: (_ev, ctx) => redditCreatePost(ctx, 'UI')
 })
@@ -28,7 +26,7 @@ const postScheduleForm: FormKey = Devvit.createForm(
       {name: 'hours', label: 'x Hours', required: true, type: 'number'},
       {name: 'mins', label: 'y Minutes', required: true, type: 'number'}
     ],
-    title: 'Changeme Post Schedule'
+    title: 'Subterrane Cave Post Schedule'
   },
   onSavePostSchedule
 )
@@ -39,7 +37,7 @@ async function onSavePostSchedule(
 ): Promise<void> {
   const {hours, mins} = ev.values
   for (const job of await ctx.scheduler.listJobs()) {
-    console.log(`canceling job ${job.name} (${job.id})`)
+    console.log(`canceling cave job ${job.name} (${job.id})`)
     await ctx.scheduler.cancelJob(job.id)
   }
 
@@ -50,8 +48,8 @@ async function onSavePostSchedule(
     !Number.isInteger(mins) ||
     (!hours && !mins)
   ) {
-    console.log('unscheduled recurring posts')
-    ctx.ui.showToast('Unscheduled recurring Changeme posts.')
+    console.log('unscheduled recurring cave posts')
+    ctx.ui.showToast('Unscheduled recurring subterrane cave posts.')
     return
   }
 
@@ -60,10 +58,10 @@ async function onSavePostSchedule(
     cron: `*/${mins} */${hours} * * *`
   })
   ctx.ui.showToast(
-    `Scheduled recurring Changeme posts every ${hours} hour(s) and ${mins} minute(s).`
+    `Scheduled recurring subterrane cave posts every ${hours} hour(s) and ${mins} minute(s).`
   )
   console.log(
-    `scheduled recurring posts every ${hours} hours(s) and ${mins} minute(s)`
+    `scheduled recurring cave posts every ${hours} hours(s) and ${mins} minute(s)`
   )
 }
 
@@ -73,7 +71,7 @@ Devvit.addSchedulerJob<undefined>({
 })
 
 Devvit.addMenuItem({
-  label: 'Schedule / Cancel Recurring Changeme Posts',
+  label: 'Schedule / Cancel Recurring Subterrane Cave Posts',
   location: 'subreddit',
   onPress: (_ev, ctx) => ctx.ui.showForm(postScheduleForm)
 })
