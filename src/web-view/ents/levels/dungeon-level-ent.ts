@@ -1,21 +1,33 @@
 import type {Box} from '../../../shared/2d.ts'
 import {paletteBackground, spacePx} from '../../../shared/theme.ts'
-import type {GameState, GameStateDraw} from '../../game-state.ts'
+import type {Game} from '../../game.ts'
 import type {Layer} from '../../layer.ts'
+import {DiceBeltEnt} from '../dice-belt-ent.ts'
 import {EID} from '../eid.ts'
-import {DungeonLevel} from './dungeon-level.ts'
+import {HPOrbEnt} from '../hp-orb-ent.ts'
+import {MonsterEnt} from '../monster-ent.ts'
+import {Monster} from '../monster.ts'
+import {PathStatusEnt} from '../path-status-ent.ts'
 
-export type TitleLevel = Box & {
+export type DungeonLevelEnt = Box & {
   readonly eid: EID
   layer: Layer
-  readonly type: 'TitleLevel'
+  readonly type: 'DungeonLevel'
 }
 
-export function TitleLevel(state: GameStateDraw): TitleLevel {
-  const {zoo} = state
+export function DungeonLevelEnt(game: Game): DungeonLevelEnt {
+  const {zoo} = game
   // state.ctrl.allowContextMenu = false
-  // zoo.clear()
-  // zoo.replace(Cursor(), Score(), Status())
+  zoo.clear()
+  zoo.replace(
+    game.cursor,
+    HPOrbEnt(game),
+    DiceBeltEnt(game),
+    PathStatusEnt(game)
+  )
+  const node = game.path.nodes[game.path.node]!
+  if (node.type === 'Battle') zoo.replace(MonsterEnt(game, node.monster))
+  // zoo.replace(game.path.nodes[game.path.node].ent)
   // state.p1.hp = playerDefaultHP
   // state.p1.score = 0
   // state.p1.x = state.p1.y = 4800
@@ -23,22 +35,22 @@ export function TitleLevel(state: GameStateDraw): TitleLevel {
   return {
     eid: EID(),
     layer: 'Level',
-    type: 'TitleLevel',
-    x: state.cam.x,
-    y: state.cam.y,
-    w: state.cam.minWH.w,
-    h: state.cam.minWH.h
+    type: 'DungeonLevel',
+    x: 0,
+    y: 0,
+    w: game.cam.minWH.w,
+    h: game.cam.minWH.h
   }
 }
 
-export function titleLevelDraw(
-  _lvl: Readonly<TitleLevel>,
-  state: Readonly<GameStateDraw>
+export function dungeonLevelEntDraw(
+  _lvl: Readonly<DungeonLevelEnt>,
+  game: Readonly<Game>
 ): void {
-  const {c2d, cam} = state
+  const {img, c2d, cam} = game
 
   c2d.save()
-  c2d.translate(-state.cam.x, -state.cam.y)
+  c2d.translate(-game.cam.x, -game.cam.y)
 
   c2d.fillStyle = '#eaeaea'
   c2d.beginPath()
@@ -68,7 +80,6 @@ export function titleLevelDraw(
   c2d.fill()
 
   c2d.restore()
-
   // c2d.moveTo(0, 0)
   // c2d.lineTo(0, canvas.width)
   // c2d.lineTo(canvas.height, canvas.width)
@@ -76,8 +87,7 @@ export function titleLevelDraw(
   // c2d.closePath()
 }
 
-export function titleLevelUpdate(lvl: TitleLevel, state: GameStateDraw): void {
-  console.log('titleLevelUpdate')
+export function dungeonLevelEntUpdate(lvl: DungeonLevelEnt, game: Game): void {
   // if (
   //   (state.init && state.p1.t2 !== state.author.t2) ||
   //   state.completed ||
@@ -87,7 +97,7 @@ export function titleLevelUpdate(lvl: TitleLevel, state: GameStateDraw): void {
   //     // only send game over if player triggered it and we're not revisiting an
   //     // old game.
   //     postMessage({type: 'GameOver', score: state.p1.score, id: state.msgID})
-  state.zoo.remove(lvl)
-  state.zoo.replace(DungeonLevel(state))
+  // state.zoo.remove(lvl)
+  // state.zoo.replace(DungeonLevel(state))
   // }
 }

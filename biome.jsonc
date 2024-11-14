@@ -1,7 +1,8 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
   "css": {
-    "formatter": {      "enabled": true,
+    "formatter": {
+      "enabled": true,
       "indentStyle": "space",
       "quoteStyle": "single"
     },
@@ -26,6 +27,7 @@
   },
   "linter": {
     "rules": {
+      "performance": { "noDelete": "off" },
       "complexity": { "noThisInStatic": "off" },
       "style": {
         "noInferrableTypes": "off",

@@ -1,20 +1,35 @@
 export type Assets = {
   audio: {[name in 'dice0']: ArrayBuffer}
+  font: FontFace
   img: {
-    [name in 'checkerboard' | 'cursor' | 'dice' | 'hpOrb']: HTMLImageElement
+    [name in
+      | 'checkerboard'
+      | 'cursor'
+      | 'dice'
+      | 'fog'
+      | 'hpOrb'
+      | 'monster']: HTMLImageElement
   }
 }
 
 export async function Assets(): Promise<Assets> {
-  const [dice0, checkerboard, cursor, dice, hpOrb] = await Promise.all([
-    loadAudio('assets/audio/dice-0.ogg'),
-    loadImage('assets/images/checkerboard.webp'),
-    loadImage('assets/images/cursor.webp'),
-    loadImage('assets/images/dice.webp'),
-    loadImage('assets/images/hp-orb.webp')
-    // await document.fonts.load('6px mem 5x6')
-  ])
-  return {audio: {dice0}, img: {checkerboard, cursor, dice, hpOrb}}
+  const [dice0, checkerboard, cursor, dice, fog, hpOrb, monster, font] =
+    await Promise.all([
+      loadAudio('assets/audio/dice-0.ogg'),
+      loadImage('assets/images/checkerboard.webp'),
+      loadImage('assets/images/cursor.webp'),
+      loadImage('assets/images/dice.webp'),
+      loadImage('assets/images/fog.webp'),
+      loadImage('assets/images/hp-orb.webp'),
+      loadImage('assets/images/monster.webp'),
+      new FontFace('mem', 'url(assets/mem-prop-5x6.ttf)').load()
+    ])
+
+  return {
+    audio: {dice0},
+    font,
+    img: {checkerboard, cursor, dice, fog, hpOrb, monster}
+  }
 }
 
 async function loadAudio(url: string): Promise<ArrayBuffer> {

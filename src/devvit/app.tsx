@@ -1,12 +1,8 @@
 // biome-ignore lint/style/useImportType: Devvit is a functional dependency of JSX.
 import {Devvit} from '@devvit/public-api'
-import type {JSONObject} from '@devvit/public-api'
-import {
-  AppMessageQueue,
-  type DevvitMessage,
-  type WebViewMessage
-} from '../shared/message.js'
-import {T2, T3, anonSnoovatarURL, anonUsername} from '../shared/tid.js'
+import type {JSONValue} from '@devvit/public-api'
+import type {DevvitMessage, WebViewMessage} from '../shared/message.js'
+import {T3, anonSnoovatarURL, anonUsername} from '../shared/tid.js'
 import {redisPostQuery} from './redis.js'
 import {useState2} from './use-state2.js'
 
@@ -22,31 +18,27 @@ export function App(ctx: Devvit.Context): JSX.Element {
   })
   const [postRecord] = useState2(() => redisPostQuery(ctx.redis, t3))
   if (!postRecord) throw Error('no post record')
-
-  const [msgQueue, setMsgQueue] = useState2(
-    AppMessageQueue({debug, seed: postRecord?.seed, type: 'Init'})
+  useState2(() =>
+    ctx.ui.webView.postMessage<DevvitMessage>('web-view', {
+      type: 'Init',
+      debug,
+      seed: postRecord.seed
+    })
   )
 
-  function queueMsg(msg: Readonly<Omit<DevvitMessage, 'id'>>): void {
-    setMsgQueue(prev => ({
-      id: prev.id + 1,
-      q: [...prev.q, {...msg, id: prev.id + 1}]
-    }))
-  }
-
-  function drainQueue(id: number): void {
-    setMsgQueue(prev => ({id: prev.id, q: prev.q.filter(msg => msg.id > id)}))
-  }
-
-  async function onMsg(msg: WebViewMessage): Promise<void> {
+  function onMsg(msg: WebViewMessage): void {
     if (debug)
       console.log(`${username} app received msg=${JSON.stringify(msg)}`)
-    drainQueue(msg.id)
 
     switch (msg.type) {
-      case 'Init':
+      case 'EndGame':
         break
-
+      case 'NewGame':
+        break
+      case 'SaveGame':
+        break
+      case 'StartGame':
+        break
       default:
         msg satisfies never
         break
@@ -55,9 +47,9 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
   return (
     <webview
+      id='web-view'
       grow
-      onMessage={onMsg as (msg: JSONObject) => Promise<void>}
-      state={msgQueue}
+      onMessage={onMsg as (msg: JSONValue) => void}
       url='index.html'
     />
   )

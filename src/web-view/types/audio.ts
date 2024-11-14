@@ -9,8 +9,12 @@ export async function Audio(assets: Readonly<Assets>): Promise<Audio> {
   return {ctx, dice0}
 }
 
-export function audioPlay(ctx: AudioContext, buf: AudioBuffer): void {
-  if (ctx.state !== 'running') return // prevent queuing sounds.
+export function audioPlay(
+  ctx: AudioContext,
+  buf: AudioBuffer,
+  drop: boolean = false
+): void {
+  if (drop && ctx.state !== 'running') return // prevent queuing sounds.
 
   const src = ctx.createBufferSource()
   src.buffer = buf

@@ -1,23 +1,21 @@
 import type {Box} from '../../../shared/2d.ts'
 import {paletteBackground, spacePx} from '../../../shared/theme.ts'
-import type {GameState, GameStateDraw} from '../../game-state.ts'
+import type {ConstructedGame, Game} from '../../game.ts'
 import type {Layer} from '../../layer.ts'
-import {Cursor} from '../cursor.ts'
-import {DiceBelt} from '../dice-belt.ts'
 import {EID} from '../eid.ts'
-import {HPOrb} from '../hp-orb.ts'
+import {DungeonLevelEnt} from './dungeon-level-ent.ts'
 
-export type DungeonLevel = Box & {
+export type TitleLevelEnt = Box & {
   readonly eid: EID
   layer: Layer
-  readonly type: 'DungeonLevel'
+  readonly type: 'TitleLevel'
 }
 
-export function DungeonLevel(state: Readonly<GameStateDraw>): DungeonLevel {
-  const {zoo} = state
+export function TitleLevelEnt(game: ConstructedGame): TitleLevelEnt {
+  const {zoo} = game
   // state.ctrl.allowContextMenu = false
-  zoo.clear()
-  zoo.replace(state.cursor, HPOrb(state), DiceBelt(state))
+  // zoo.clear()
+  // zoo.replace(Cursor(), Score(), Status())
   // state.p1.hp = playerDefaultHP
   // state.p1.score = 0
   // state.p1.x = state.p1.y = 4800
@@ -25,22 +23,22 @@ export function DungeonLevel(state: Readonly<GameStateDraw>): DungeonLevel {
   return {
     eid: EID(),
     layer: 'Level',
-    type: 'DungeonLevel',
-    x: 0,
-    y: 0,
-    w: state.cam.minWH.w,
-    h: state.cam.minWH.h
+    type: 'TitleLevel',
+    x: game.cam.x,
+    y: game.cam.y,
+    w: game.cam.minWH.w,
+    h: game.cam.minWH.h
   }
 }
 
-export function dungeonLevelDraw(
-  _lvl: Readonly<DungeonLevel>,
-  state: Readonly<GameState>
+export function titleLevelEntDraw(
+  _lvl: Readonly<TitleLevelEnt>,
+  game: Readonly<Game>
 ): void {
-  const {c2d, cam} = state
+  const {c2d, cam} = game
 
   c2d.save()
-  c2d.translate(-state.cam.x, -state.cam.y)
+  c2d.translate(-game.cam.x, -game.cam.y)
 
   c2d.fillStyle = '#eaeaea'
   c2d.beginPath()
@@ -70,6 +68,7 @@ export function dungeonLevelDraw(
   c2d.fill()
 
   c2d.restore()
+
   // c2d.moveTo(0, 0)
   // c2d.lineTo(0, canvas.width)
   // c2d.lineTo(canvas.height, canvas.width)
@@ -77,7 +76,8 @@ export function dungeonLevelDraw(
   // c2d.closePath()
 }
 
-export function dungeonLevelUpdate(lvl: DungeonLevel, state: GameState): void {
+export function titleLevelEntUpdate(lvl: TitleLevelEnt, game: Game): void {
+  console.log('titleLevelUpdate')
   // if (
   //   (state.init && state.p1.t2 !== state.author.t2) ||
   //   state.completed ||
@@ -87,7 +87,8 @@ export function dungeonLevelUpdate(lvl: DungeonLevel, state: GameState): void {
   //     // only send game over if player triggered it and we're not revisiting an
   //     // old game.
   //     postMessage({type: 'GameOver', score: state.p1.score, id: state.msgID})
-  // state.zoo.remove(lvl)
-  // state.zoo.replace(DungeonLevel(state))
-  // }
+  // if (game.img) {
+  game.zoo.remove(lvl)
+  game.zoo.replace(DungeonLevelEnt(game))
+  // } // }
 }

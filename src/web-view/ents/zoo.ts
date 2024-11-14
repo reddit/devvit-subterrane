@@ -1,21 +1,44 @@
-import {type GameState, type GameStateDraw, isGameState} from '../game-state.ts'
+import type {Game} from '../game.ts'
 import {type Layer, layerDrawOrder} from '../layer.ts'
-import {type Cursor, cursorDraw, cursorUpdate} from './cursor.ts'
-import {type DiceBelt, diceBeltDraw, diceBeltUpdate} from './dice-belt.ts'
+import {type CursorEnt, cursorEntDraw, cursorUpdate} from './cursor-ent.ts'
+import {
+  type DiceBeltEnt,
+  diceBeltEntDraw,
+  diceBeltEntUpdate
+} from './dice-belt-ent.ts'
 import type {EID} from './eid.ts'
-import {type HPOrb, hpOrbDraw, hpOrbUpdate} from './hp-orb.ts'
+import {type HPOrbEnt, hpOrbEntDraw, hpOrbEntUpdate} from './hp-orb-ent.ts'
+import {type ItemEnt, itemEntDraw, itemEntUpdate} from './item-ent.ts'
 import {
-  type DungeonLevel,
-  dungeonLevelDraw,
-  dungeonLevelUpdate
-} from './levels/dungeon-level.ts'
+  type DungeonLevelEnt,
+  dungeonLevelEntDraw,
+  dungeonLevelEntUpdate
+} from './levels/dungeon-level-ent.ts'
 import {
-  TitleLevel,
-  titleLevelDraw,
-  titleLevelUpdate
-} from './levels/title-level.ts'
+  type TitleLevelEnt,
+  titleLevelEntDraw,
+  titleLevelEntUpdate
+} from './levels/title-level-ent.ts'
+import {
+  type MonsterEnt,
+  monsterEntDraw,
+  monsterEntUpdate
+} from './monster-ent.ts'
+import {
+  type PathStatusEnt,
+  pathStatusEntDraw,
+  pathStatusEntUpdate
+} from './path-status-ent.ts'
 
-export type Ent = Cursor | DiceBelt | DungeonLevel | HPOrb | TitleLevel
+export type Ent =
+  | CursorEnt
+  | DiceBeltEnt
+  | DungeonLevelEnt
+  | HPOrbEnt
+  | ItemEnt
+  | MonsterEnt
+  | PathStatusEnt
+  | TitleLevelEnt
 
 type EntByID = {[eid: EID]: Ent}
 
@@ -31,45 +54,50 @@ export class Zoo {
     this.#entsByLayer = {Cursor: {}, Default: {}, Level: {}, UI: {}}
   }
 
-  draw(state: GameStateDraw): void {
-    if (!isGameState(state)) {
-      titleLevelDraw(TitleLevel(state), state)
-      return
-    }
-
+  draw(game: Game): void {
     for (const layer of layerDrawOrder) {
-      state.c2d.save()
+      game.c2d.save()
       if (layer !== 'Cursor' && layer !== 'Level' && layer !== 'UI')
-        state.c2d.translate(-state.cam.x, -state.cam.y)
+        game.c2d.translate(-game.cam.x, -game.cam.y)
 
       for (const ent of Object.values(this.#entsByLayer[layer])) {
         switch (ent.type) {
           case 'Cursor':
-            cursorDraw(ent, state)
+            cursorEntDraw(ent, game)
             break
           case 'DiceBelt':
-            diceBeltDraw(ent, state)
-            break
-          case 'HPOrb':
-            hpOrbDraw(ent, state)
+            diceBeltEntDraw(ent, game)
             break
           case 'DungeonLevel':
-            dungeonLevelDraw(ent, state)
+            dungeonLevelEntDraw(ent, game)
+            break
+          case 'HPOrb':
+            hpOrbEntDraw(ent, game)
+            break
+          case 'Item':
+            itemEntDraw(ent, game)
+            break
+          case 'Monster':
+            monsterEntDraw(ent, game)
+            break
+          case 'PathStatus':
+            pathStatusEntDraw(ent, game)
             break
           case 'TitleLevel':
-            titleLevelDraw(ent, state)
+            titleLevelEntDraw(ent, game)
             break
           default:
             ent satisfies never
         }
       }
-      state.c2d.restore()
+      game.c2d.restore()
     }
   }
 
   find(eid: EID): Ent | undefined {
     for (const layer in this.#entsByLayer)
-      if (this.#entsByLayer[layer][eid]) return this.#entsByLayer[layer][eid]
+      if (this.#entsByLayer[layer as Layer][eid])
+        return this.#entsByLayer[layer as Layer][eid]
   }
 
   /** only an ent's layer is replaced. */
@@ -77,25 +105,32 @@ export class Zoo {
     for (const ent of ents) this.#entsByLayer[ent.layer][ent.eid] = ent
   }
 
-  update(state: GameStateDraw): void {
-    if (!isGameState(state)) return
-
+  update(game: Game): void {
+    cursorUpdate(game.cursor, game) // update first to align to input edges.
     for (const ent of this.ents()) {
       switch (ent.type) {
         case 'Cursor':
-          cursorUpdate(ent, state)
           break
         case 'DiceBelt':
-          diceBeltUpdate(ent, state)
-          break
-        case 'HPOrb':
-          hpOrbUpdate(ent, state)
+          diceBeltEntUpdate(ent, game)
           break
         case 'DungeonLevel':
-          dungeonLevelUpdate(ent, state)
+          dungeonLevelEntUpdate(ent, game)
+          break
+        case 'HPOrb':
+          hpOrbEntUpdate(ent, game)
+          break
+        case 'Item':
+          itemEntUpdate(ent, game)
+          break
+        case 'Monster':
+          monsterEntUpdate(ent, game)
+          break
+        case 'PathStatus':
+          pathStatusEntUpdate(ent, game)
           break
         case 'TitleLevel':
-          titleLevelUpdate(ent, state)
+          titleLevelEntUpdate(ent, game)
           break
         default:
           ent satisfies never

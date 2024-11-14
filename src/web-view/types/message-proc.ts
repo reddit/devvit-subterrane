@@ -1,18 +1,14 @@
-import type {AppMessageQueue, NoIDWebViewMessage} from '../../shared/message.ts'
+import type {DevvitMessage, WebViewMessage} from '../../shared/message.ts'
 import {Random} from '../../shared/types/random.ts'
-import type {GameStateUnknown} from '../game-state.ts'
+import {Path} from '../ents/path.ts'
+import type {ConstructedGame, Game, InitGame} from '../game.ts'
 
 export class MessageProc {
   /** mutable reference. */
-  readonly #state: GameStateUnknown
-  #msgID: number = 0
+  readonly #game: ConstructedGame
 
-  constructor(state: GameStateUnknown) {
-    this.#state = state
-  }
-
-  postMessage(msg: NoIDWebViewMessage): void {
-    parent.postMessage({...msg, id: this.#msgID}, document.referrer)
+  constructor(game: ConstructedGame) {
+    this.#game = game
   }
 
   register(op: 'add' | 'remove'): void {
@@ -23,30 +19,28 @@ export class MessageProc {
   }
 
   _onMsg = (
-    ev: MessageEvent<
-      {type: 'stateUpdate'; data: AppMessageQueue} | {type: undefined}
-    >
+    ev: MessageEvent<{type?: 'devvit-message'; data: {message: DevvitMessage}}>
   ): void => {
-    if (ev.data.type !== 'stateUpdate') return // hack: filter unknown messages.
+    // hack: filter unknown messages.
+    if (ev.data.type !== 'devvit-message') return
 
-    for (const msg of ev.data.data.q) {
-      // hack: filter repeat messages.
-      if (msg.id <= this.#msgID) continue
-      this.#msgID = msg.id
+    const msg = ev.data.data.message
+    if (this.#game.debug || msg.debug)
+      console.log(`web view received msg=${JSON.stringify(msg)}`)
 
-      if (this.#state.debug || msg.debug)
-        console.log(`web view received msg=${JSON.stringify(msg)}`)
+    switch (msg.type) {
+      case 'Init':
+        this.#game.debug = msg.debug
+        this.#game.rnd = new Random(msg.seed)
+        this.#game.path = Path(this.#game.rnd)
+        break
 
-      switch (msg.type) {
-        case 'Init':
-          this.#state.debug = msg.debug
-          this.#state.rnd = new Random(msg.seed)
-          this.postMessage({type: 'Init'})
-          break
-
-        default:
-          msg.type satisfies never
-      }
+      default:
+        msg.type satisfies never
     }
   }
+}
+
+export function postMessage(msg: WebViewMessage): void {
+  parent.postMessage(msg, document.referrer)
 }

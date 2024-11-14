@@ -1,9 +1,9 @@
-import {AppMessageQueue} from '../shared/message.js'
+import type {DevvitMessage} from '../shared/message.js'
 import {randomEndSeed} from '../shared/types/random.js'
-import {Game} from './game.js'
+import {Engine} from './engine.js'
 
-const game = await Game.new()
-game.start()
+const engine = await new Engine()
+await engine.start()
 
 const noDevvit = location.port === '1234'
 
@@ -16,16 +16,16 @@ if (noDevvit) {
 
   setTimeout(
     () =>
-      game._state.mail?._onMsg(
-        new MessageEvent<{type: 'stateUpdate'; data: AppMessageQueue}>(
-          'message',
-          {
-            data: {
-              type: 'stateUpdate',
-              data: AppMessageQueue({debug: true, seed, type: 'Init'})
-            }
+      engine._game.mail?._onMsg(
+        new MessageEvent<{
+          type: 'devvit-message'
+          data: {message: DevvitMessage}
+        }>('message', {
+          data: {
+            type: 'devvit-message',
+            data: {message: {debug: true, seed, type: 'Init'}}
           }
-        )
+        })
       ),
     delay
   )
