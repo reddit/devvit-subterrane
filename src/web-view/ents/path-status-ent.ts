@@ -33,7 +33,7 @@ export function pathStatusEntDraw(
   const {c2d, path} = game
 
   c2d.lineWidth = 3
-  c2d.strokeStyle = '#eaeaea'
+  c2d.strokeStyle = '#f2f2f2'
   for (const [i, node] of path.nodes.entries()) {
     c2d.beginPath()
     c2d.arc(
@@ -44,15 +44,15 @@ export function pathStatusEntDraw(
       2 * Math.PI
     )
     if (path.node === i) {
-      c2d.fillStyle = '#eaeaea40'
+      c2d.fillStyle = '#f2f2f240'
       c2d.fill()
     } else if (path.node > i) {
-      c2d.fillStyle = '#eaeaea'
+      c2d.fillStyle = '#f2f2f2'
       c2d.fill()
     }
     c2d.stroke()
     if (i === path.nodes.length - 1) break
-    c2d.fillStyle = '#eaeaea'
+    c2d.fillStyle = '#f2f2f2'
     for (let ii = 0; ii < 3; ii++) {
       c2d.beginPath()
       c2d.arc(

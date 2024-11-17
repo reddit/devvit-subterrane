@@ -281,7 +281,7 @@ function rollMaxHP(monster: Readonly<Monster>, rnd: Random): number {
 }
 
 // to-do: make this different than hp.
-export function rollDmg(monster: Readonly<Monster>, rnd: Random): number {
+export function rollDamage(monster: Readonly<Monster>, rnd: Random): number {
   let dmg = 2 + Math.ceil(rnd.num * 10) + monster.lvl * Math.ceil(10 * rnd.num)
   switch (monster.class) {
     case 'Alchemist':

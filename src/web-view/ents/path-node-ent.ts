@@ -9,14 +9,14 @@ import type {DiceBeltEnt} from './dice-belt-ent.ts'
 import {diceRoll} from './dice.ts'
 import {EID} from './eid.ts'
 import {GameOverLevelEnt} from './levels/game-over-level-ent.ts'
-import {rollDmg} from './monster.ts'
+import {rollDamage} from './monster.ts'
 import type {PathNode} from './path.ts'
 
 export type PathNodeEnt = Box & {
   layer: Layer
   belt: DiceBeltEnt
   node: PathNode
-  dmg: number
+  roll: number
   readonly type: 'PathNode'
   readonly eid: EID
 }
@@ -37,7 +37,7 @@ export function PathNodeEnt(
     node,
     eid: EID(),
     belt,
-    dmg: 0,
+    roll: 0,
     layer: 'Default',
     type: 'PathNode',
     x: game.cam.x + game.cam.w / 2 - w / 2,
@@ -109,15 +109,29 @@ export function pathNodeEntDraw(
     case 'AI':
       switch (node.phase) {
         case 'Paused':
-          console.log(node.monster.hp)
-          if (node.monster.hp <= 0) {
-            drawText(c2d, 'enemy slain!', {
-              // to-do: name.
-              fill: '#eaeaea',
-              justify: 'Center',
-              x: Math.trunc(cam.w / 2),
-              y: cam.y + spacePx * 12
-            })
+          switch (node.type) {
+            case 'Loot':
+              drawText(c2d, 'loot found!', {
+                // to-do: name.
+                fill: '#eaeaea',
+                justify: 'Center',
+                x: Math.trunc(cam.w / 2),
+                y: cam.y + spacePx * 12
+              })
+              break
+            case 'Monster':
+              if (node.monster.hp <= 0) {
+                drawText(c2d, 'enemy defeated!', {
+                  // to-do: name.
+                  fill: '#eaeaea',
+                  justify: 'Center',
+                  x: Math.trunc(cam.w / 2),
+                  y: cam.y + spacePx * 12
+                })
+              }
+              break
+            default:
+              node satisfies never
           }
           break
         case 'Init':
@@ -132,7 +146,7 @@ export function pathNodeEntDraw(
           })
           break
         case 'Rolled':
-          drawText(c2d, `${path.dmg}`, {
+          drawText(c2d, `${path.roll}`, {
             fill: '#990000',
             justify: 'Center',
             size: 24,
@@ -168,7 +182,7 @@ export function pathNodeEntDraw(
           }) // to-do:palette.
           break
         case 'Rolled':
-          drawText(c2d, `${path.dmg}`, {
+          drawText(c2d, `${path.roll}`, {
             fill: '#990000',
             justify: 'Center',
             size: 24,
@@ -181,7 +195,7 @@ export function pathNodeEntDraw(
       }
       break
     default:
-      node satisfies never
+      node.turn satisfies never
   }
 }
 
@@ -191,31 +205,53 @@ export function pathNodeEntUpdate(path: PathNodeEnt, game: Game): void {
   switch (node.turn) {
     case 'AI':
       switch (node.phase) {
-        case 'Paused':
+        case 'Paused': {
           if (!node.updated) node.updated = game.now
-          if (game.now - node.updated > pausedMillis) {
+          const resume = game.now - node.updated > pausedMillis
+          if (resume) {
             node.updated = game.now
             node.phase = 'Init'
-            if (node.monster.hp <= 0) {
-              node.updated = game.now
-              node.turn = 'P1'
-              if (game.path.node === game.path.nodes.length - 1) {
-                game.zoo.replace(GameOverLevelEnt(game))
-              } else game.path.node++
-            }
+          }
+          let advance
+          switch (node.type) {
+            case 'Loot':
+              advance = resume
+              break
+            case 'Monster':
+              advance = resume && node.monster.hp <= 0
+              break
+            default:
+              node satisfies never
+          }
+          if (advance) {
+            node.updated = game.now
+            node.turn = 'P1'
+            if (game.path.node === game.path.nodes.length - 1) {
+              game.zoo.replace(GameOverLevelEnt(game))
+            } else game.path.node++
           }
           break
+        }
         case 'Init':
-          node.phase = 'Rolling'
-          audioPlay(game.audio, game.sound.dice0)
-          node.updated = game.now
+          switch (node.type) {
+            case 'Loot':
+              break
+            case 'Monster':
+              node.phase = 'Rolling'
+              audioPlay(game.audio, game.sound.dice0)
+              node.updated = game.now
+              break
+            default:
+              node satisfies never
+          }
           break
         case 'Rolling':
+          if (node.type !== 'Monster') throw Error('no monster')
           if (game.now - node.updated >= rollMillis) {
             node.phase = 'Rolled'
             node.updated = game.now
-            path.dmg = rollDmg(node.monster, game.rnd)
-            game.p1.hp -= path.dmg
+            path.roll = rollDamage(node.monster, game.rnd)
+            game.p1.hp -= path.roll
           }
           // to-do: don't tie UI logic to model.
           else if (game.rnd.num > 0.7) diceRoll(game.dice, game.rnd)
@@ -244,7 +280,6 @@ export function pathNodeEntUpdate(path: PathNodeEnt, game: Game): void {
         case 'Init':
           switch (node.type) {
             case 'Loot':
-              break
             case 'Monster':
               if (
                 game.ctrl.isOnStart('A') &&
@@ -263,8 +298,19 @@ export function pathNodeEntUpdate(path: PathNodeEnt, game: Game): void {
           if (game.now - node.updated >= rollMillis) {
             node.phase = 'Rolled'
             node.updated = game.now
-            path.dmg = Math.ceil(game.dice.val * ((game.p1.lvl + 1) * 10))
-            node.monster.hp -= path.dmg
+            path.roll = Math.ceil(game.dice.val * ((game.p1.lvl + 1) * 10))
+
+            switch (node.type) {
+              case 'Loot':
+                if (node.item.hp) game.p1.hp += path.roll
+                else console.log('to-do: implement dmg')
+                break
+              case 'Monster':
+                node.monster.hp -= path.roll
+                break
+              default:
+                node satisfies never
+            }
           }
           // to-do: don't tie UI logic to model.
           else if (game.rnd.num > 0.7) diceRoll(game.dice, game.rnd)
@@ -281,6 +327,6 @@ export function pathNodeEntUpdate(path: PathNodeEnt, game: Game): void {
       }
       break
     default:
-      node satisfies never
+      node.turn satisfies never
   }
 }

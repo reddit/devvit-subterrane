@@ -8,8 +8,8 @@ export type PathNode = MonsterNode | LootNode
 export type LootNode = {
   readonly type: 'Loot'
   item: Item
-  phase: 'Paused' | 'Init'
-  turn: 'P1'
+  phase: 'Paused' | 'Init' | 'Rolling'
+  turn: 'P1' | 'AI'
   updated: UTCMillis
 }
 export type MonsterNode = {
