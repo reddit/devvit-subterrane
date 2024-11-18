@@ -5,7 +5,8 @@ import {
   type FormOnSubmitEvent
 } from '@devvit/public-api'
 import {App} from './devvit/app.tsx'
-import {redditCreatePost} from './devvit/reddit.tsx'
+import {r2CreatePost} from './devvit/r2.tsx'
+import {T2} from './shared/types/tid.ts'
 
 const newPostScheduleJob: string = 'NewPostSchedule'
 
@@ -14,7 +15,10 @@ Devvit.addCustomPostType({name: 'Cave', height: 'regular', render: App})
 Devvit.addMenuItem({
   label: 'New Subterrane Cave Post',
   location: 'subreddit',
-  onPress: (_ev, ctx) => redditCreatePost(ctx, 'UI')
+  onPress: (_ev, ctx) => {
+    if (!ctx.userId) throw Error('no T2')
+    r2CreatePost(ctx, T2(ctx.userId), 'UI')
+  }
 })
 
 const postScheduleForm: FormKey = Devvit.createForm(
@@ -67,7 +71,10 @@ async function onSavePostSchedule(
 
 Devvit.addSchedulerJob<undefined>({
   name: newPostScheduleJob,
-  onRun: (_ev, ctx) => redditCreatePost(ctx, 'NoUI')
+  onRun: (_ev, ctx) => {
+    if (!ctx.userId) throw Error('no T2')
+    r2CreatePost(ctx, T2(ctx.userId), 'NoUI')
+  }
 })
 
 Devvit.addMenuItem({

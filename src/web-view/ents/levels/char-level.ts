@@ -1,27 +1,28 @@
 import {paletteBackground, spacePx} from '../../../shared/theme.ts'
 import type {Box} from '../../../shared/types/2d.ts'
-import {drawText} from '../../draw.ts'
-import type {ConstructedGame, Game} from '../../game.ts'
+import type {Game} from '../../game.ts'
 import type {Layer} from '../../layer.ts'
-import {cursorEntHits} from '../cursor-ent.ts'
+import {DiceBeltEnt} from '../dice-belt-ent.ts'
 import {EID} from '../eid.ts'
-import {CaveLevelEnt} from './cave-level-ent.ts'
-import {GameOverLevelEnt} from './game-over-level-ent.ts'
+import {HPOrbEnt} from '../hp-orb-ent.ts'
+import {PathNodeEnt} from '../path-node-ent.ts'
+import {PathStatusEnt} from '../path-status-ent.ts'
 
-export type TitleLevelEnt = Box & {
+export type CharLevelEnt = Box & {
   readonly eid: EID
-  button: Box
+  ent: PathNodeEnt
   layer: Layer
-  readonly type: 'TitleLevel'
+  readonly type: 'CharLevel'
 }
 
-const fontSize: number = 18
-const nativeFontSize: number = 6
-
-export function TitleLevelEnt(game: ConstructedGame): TitleLevelEnt {
+export function CharLevelEnt(game: Game): CharLevelEnt {
   const {zoo} = game
-  zoo.clear()
   // state.ctrl.allowContextMenu = false
+  zoo.clear()
+  const belt = DiceBeltEnt(game)
+  const ent = PathNodeEnt(game, game.path.nodes[game.path.node]!, belt)
+  ent.node.updated = game.now
+  zoo.replace(game.cursor, HPOrbEnt(game), belt, PathStatusEnt(game), ent)
   // state.p1.hp = playerDefaultHP
   // state.p1.score = 0
   // state.p1.x = state.p1.y = 4800
@@ -29,17 +30,17 @@ export function TitleLevelEnt(game: ConstructedGame): TitleLevelEnt {
   return {
     eid: EID(),
     layer: 'Level',
-    type: 'TitleLevel',
-    button: {x: 0, y: 0, w: 96, h: 48},
-    x: game.cam.x,
-    y: game.cam.y,
+    ent,
+    type: 'CharLevel',
+    x: 0,
+    y: 0,
     w: game.cam.minWH.w,
     h: game.cam.minWH.h
   }
 }
 
-export function titleLevelEntDraw(
-  lvl: Readonly<TitleLevelEnt>,
+export function charLevelEntDraw(
+  _lvl: Readonly<CharLevelEnt>,
   game: Readonly<Game>
 ): void {
   const {c2d, cam} = game
@@ -74,27 +75,7 @@ export function titleLevelEntDraw(
   )
   c2d.fill()
 
-  c2d.beginPath()
-  c2d.drawImage(
-    game.img.logo,
-    cam.x + cam.w / 2 - game.img.logo.naturalWidth / 2,
-    cam.y + spacePx * 8
-  )
-
-  c2d.beginPath()
-  c2d.roundRect(lvl.button.x, lvl.button.y, lvl.button.w, lvl.button.h, spacePx)
-  c2d.strokeStyle = '#eaeaea'
-  c2d.stroke()
-  drawText(c2d, 'play', {
-    x: cam.x + Math.trunc(cam.w / 2),
-    y: cam.y + spacePx * 12 + game.img.logo.naturalHeight + spacePx * 4,
-    justify: 'TopCenter',
-    fill: cursorEntHits(game.cursor, lvl.button, game) ? '#990000' : '#eaeaea',
-    size: fontSize
-  })
-
   c2d.restore()
-
   // c2d.moveTo(0, 0)
   // c2d.lineTo(0, canvas.width)
   // c2d.lineTo(canvas.height, canvas.width)
@@ -102,15 +83,7 @@ export function titleLevelEntDraw(
   // c2d.closePath()
 }
 
-export function titleLevelEntUpdate(lvl: TitleLevelEnt, game: Game): void {
-  const {cam, zoo} = game
-  console.log(cam.w)
-  zoo.replace(game.cursor)
-  lvl.button.x =
-    cam.x + Math.round(cam.w / 2 - lvl.button.w / 2) - fontSize / nativeFontSize
-  lvl.button.y =
-    cam.y + spacePx * 12 + game.img.logo.naturalHeight + spacePx * 3
-
+export function charLevelEntUpdate(_lvl: CharLevelEnt, _game: Game): void {
   // if (
   //   (state.init && state.p1.t2 !== state.author.t2) ||
   //   state.completed ||
@@ -120,11 +93,7 @@ export function titleLevelEntUpdate(lvl: TitleLevelEnt, game: Game): void {
   //     // only send game over if player triggered it and we're not revisiting an
   //     // old game.
   //     postMessage({type: 'GameOver', score: state.p1.score, id: state.msgID})
-  if (
-    game.ctrl.isOnStart('A') &&
-    cursorEntHits(game.cursor, lvl.button, game)
-  ) {
-    game.zoo.remove(lvl)
-    game.zoo.replace(CaveLevelEnt(game))
-  }
+  // state.zoo.remove(lvl)
+  // state.zoo.replace(DungeonLevel(state))
+  // }
 }

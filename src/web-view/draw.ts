@@ -1,5 +1,7 @@
+import {paletteBackground, spacePx} from '../shared/theme.ts'
 import type {Box, XY} from '../shared/types/2d.ts'
 import type {Assets} from './assets.ts'
+import type {Cam} from './cam.ts'
 
 export type C2D = CanvasRenderingContext2D
 export type Canvas = HTMLCanvasElement
@@ -17,6 +19,35 @@ export function Draw(
   const checkerboard = c2d.createPattern(assets.img.checkerboard, 'repeat')
   if (!checkerboard) return
   return {c2d, checkerboard}
+}
+
+export function drawClear(c2d: C2D, cam: Readonly<Cam>): void {
+  c2d.fillStyle = '#eaeaea'
+  c2d.beginPath()
+  c2d.fillRect(cam.x, cam.y, cam.w, cam.h)
+  c2d.lineWidth = 2
+  c2d.strokeStyle = '#111'
+  c2d.fillStyle = '#eaeaea'
+  c2d.beginPath()
+  c2d.roundRect(
+    c2d.lineWidth,
+    c2d.lineWidth,
+    cam.w - 2 * c2d.lineWidth,
+    cam.h - 2 * c2d.lineWidth,
+    spacePx
+  )
+  c2d.stroke()
+  c2d.fill()
+  c2d.fillStyle = paletteBackground
+  c2d.beginPath()
+  c2d.roundRect(
+    c2d.lineWidth,
+    c2d.lineWidth,
+    cam.w - 2 * c2d.lineWidth,
+    cam.h - 2 * c2d.lineWidth,
+    spacePx
+  )
+  c2d.fill()
 }
 
 export function drawText(

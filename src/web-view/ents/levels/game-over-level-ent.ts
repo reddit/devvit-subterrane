@@ -17,7 +17,7 @@ export type GameOverLevelEnt = Box & {
 const fontSize: number = 18
 const nativeFontSize: number = 6
 
-export function GameOverLevelEnt(game: LoadedGame): GameOverLevelEnt {
+export function GameOverLevelEnt(game: Readonly<LoadedGame>): GameOverLevelEnt {
   const {zoo} = game
   zoo.clear()
   // state.ctrl.allowContextMenu = false

@@ -1,5 +1,5 @@
 import type {Random} from '../../shared/types/random.ts'
-import type {Game, InitGame} from '../game.ts'
+import type {InitGame} from '../game.ts'
 
 export type Monster = {
   hp: number

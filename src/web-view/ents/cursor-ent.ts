@@ -1,6 +1,7 @@
 import {spacePx} from '../../shared/theme.js'
 import {type Box, type WH, type XY, boxHits} from '../../shared/types/2d.js'
-import type {Game, LoadedGame} from '../game.js'
+import type {Assets} from '../assets.js'
+import type {Game} from '../game.js'
 import type {Layer} from '../layer.js'
 import {EID} from './eid.js'
 
@@ -13,7 +14,7 @@ export type CursorEnt = Box & {
 
 const hitbox: Readonly<Box> = {x: 20, y: 1, w: 7, h: 7}
 
-export function CursorEnt(game: LoadedGame): CursorEnt {
+export function CursorEnt(assets: Readonly<Assets>): CursorEnt {
   return {
     eid: EID(),
     hidden: true,
@@ -21,8 +22,8 @@ export function CursorEnt(game: LoadedGame): CursorEnt {
     type: 'Cursor',
     x: 0,
     y: 0,
-    w: game.img.cursor.naturalWidth / 2,
-    h: game.img.cursor.naturalHeight
+    w: assets.img.cursor.naturalWidth / 2,
+    h: assets.img.cursor.naturalHeight
   }
 }
 

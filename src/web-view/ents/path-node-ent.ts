@@ -1,7 +1,7 @@
 import {spacePx} from '../../shared/theme.ts'
 import type {Box} from '../../shared/types/2d.ts'
 import {drawText} from '../draw.ts'
-import type {Game} from '../game.ts'
+import type {Game, LoadedGame} from '../game.ts'
 import type {Layer} from '../layer.ts'
 import {audioPlay} from '../types/audio.ts'
 import {cursorEntHits} from './cursor-ent.ts'
@@ -27,7 +27,7 @@ const pausedMillis: number = 2_000
 const margin: number = 16
 
 export function PathNodeEnt(
-  game: Game,
+  game: Readonly<LoadedGame>,
   node: PathNode,
   belt: DiceBeltEnt
 ): PathNodeEnt {
@@ -67,7 +67,7 @@ export function pathNodeEntDraw(
   const y = cam.h / 2 - img.fog.naturalHeight / 2
   c2d.save()
   c2d.translate(cam.w / 2, cam.h / 2)
-  const angle = -((game.now % 60_000) / 60_000) * Math.PI * 2
+  // const angle = -((game.now % 60_000) / 60_000) * Math.PI * 2
   // c2d.rotate(angle)
   c2d.translate(-cam.w / 2, -cam.h / 2)
 

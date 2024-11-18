@@ -14,15 +14,15 @@ import {
   caveLevelEntUpdate
 } from './levels/cave-level-ent.ts'
 import {
+  type CharLevelEnt,
+  charLevelEntDraw,
+  charLevelEntUpdate
+} from './levels/char-level.ts'
+import {
   type GameOverLevelEnt,
   gameOverLevelEntDraw,
   gameOverLevelEntUpdate
 } from './levels/game-over-level-ent.ts'
-import {
-  type TitleLevelEnt,
-  titleLevelEntDraw,
-  titleLevelEntUpdate
-} from './levels/title-level-ent.ts'
 import {
   type PathNodeEnt,
   pathNodeEntDraw,
@@ -36,13 +36,13 @@ import {
 
 export type Ent =
   | CaveLevelEnt
+  | CharLevelEnt
   | CursorEnt
   | DiceBeltEnt
   | GameOverLevelEnt
   | HPOrbEnt
   | PathNodeEnt
   | PathStatusEnt
-  | TitleLevelEnt
 
 type EntByID = {[eid: EID]: Ent}
 
@@ -69,6 +69,9 @@ export class Zoo {
           case 'CaveLevel':
             caveLevelEntDraw(ent, game)
             break
+          case 'CharLevel':
+            charLevelEntDraw(ent, game)
+            break
           case 'Cursor':
             cursorEntDraw(ent, game)
             break
@@ -86,9 +89,6 @@ export class Zoo {
             break
           case 'PathStatus':
             pathStatusEntDraw(ent, game)
-            break
-          case 'TitleLevel':
-            titleLevelEntDraw(ent, game)
             break
           default:
             ent satisfies never
@@ -116,6 +116,9 @@ export class Zoo {
         case 'CaveLevel':
           caveLevelEntUpdate(ent, game)
           break
+        case 'CharLevel':
+          charLevelEntUpdate(ent, game)
+          break
         case 'Cursor':
           break
         case 'DiceBelt':
@@ -132,9 +135,6 @@ export class Zoo {
           break
         case 'PathStatus':
           pathStatusEntUpdate(ent, game)
-          break
-        case 'TitleLevel':
-          titleLevelEntUpdate(ent, game)
           break
         default:
           ent satisfies never

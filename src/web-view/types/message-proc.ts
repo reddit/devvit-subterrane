@@ -1,13 +1,14 @@
 import type {DevvitMessage, WebViewMessage} from '../../shared/types/message.ts'
 import {Random} from '../../shared/types/random.ts'
+import {CaveLevelEnt} from '../ents/levels/cave-level-ent.ts'
 import {Path} from '../ents/path.ts'
-import {type ConstructedGame, isInitGame} from '../game.ts'
+import {type LoadedGame, isInitGame} from '../game.ts'
 
 export class MessageProc {
   /** mutable reference. */
-  readonly #game: ConstructedGame
+  readonly #game: LoadedGame
 
-  constructor(game: ConstructedGame) {
+  constructor(game: LoadedGame) {
     this.#game = game
   }
 
@@ -34,6 +35,7 @@ export class MessageProc {
         this.#game.rnd = new Random(msg.seed)
         if (!isInitGame(this.#game)) throw Error('no init game')
         this.#game.path = Path(this.#game)
+        this.#game.zoo.replace(CaveLevelEnt(this.#game))
         break
 
       default:

@@ -1,13 +1,11 @@
-import {paletteBackground, spacePx} from '../../../shared/theme.ts'
 import type {Box} from '../../../shared/types/2d.ts'
-import type {Game} from '../../game.ts'
+import type {Game, InitGame} from '../../game.ts'
 import type {Layer} from '../../layer.ts'
 import {DiceBeltEnt} from '../dice-belt-ent.ts'
 import {EID} from '../eid.ts'
 import {HPOrbEnt} from '../hp-orb-ent.ts'
 import {PathNodeEnt} from '../path-node-ent.ts'
 import {PathStatusEnt} from '../path-status-ent.ts'
-import {GameOverLevelEnt} from './game-over-level-ent.ts'
 
 export type CaveLevelEnt = Box & {
   readonly eid: EID
@@ -16,7 +14,7 @@ export type CaveLevelEnt = Box & {
   readonly type: 'CaveLevel'
 }
 
-export function CaveLevelEnt(game: Game): CaveLevelEnt {
+export function CaveLevelEnt(game: InitGame): CaveLevelEnt {
   const {zoo} = game
   // state.ctrl.allowContextMenu = false
   zoo.clear()
@@ -42,41 +40,8 @@ export function CaveLevelEnt(game: Game): CaveLevelEnt {
 
 export function caveLevelEntDraw(
   _lvl: Readonly<CaveLevelEnt>,
-  game: Readonly<Game>
+  _game: Readonly<Game>
 ): void {
-  const {img, c2d, cam} = game
-
-  c2d.save()
-  c2d.translate(-game.cam.x, -game.cam.y)
-
-  c2d.fillStyle = '#eaeaea'
-  c2d.beginPath()
-  c2d.fillRect(cam.x, cam.y, cam.w, cam.h)
-  c2d.lineWidth = 2
-  c2d.strokeStyle = '#111'
-  c2d.fillStyle = '#eaeaea'
-  c2d.beginPath()
-  c2d.roundRect(
-    c2d.lineWidth,
-    c2d.lineWidth,
-    cam.w - 2 * c2d.lineWidth,
-    cam.h - 2 * c2d.lineWidth,
-    spacePx
-  )
-  c2d.stroke()
-  c2d.fill()
-  c2d.fillStyle = paletteBackground
-  c2d.beginPath()
-  c2d.roundRect(
-    c2d.lineWidth,
-    c2d.lineWidth,
-    cam.w - 2 * c2d.lineWidth,
-    cam.h - 2 * c2d.lineWidth,
-    spacePx
-  )
-  c2d.fill()
-
-  c2d.restore()
   // c2d.moveTo(0, 0)
   // c2d.lineTo(0, canvas.width)
   // c2d.lineTo(canvas.height, canvas.width)
@@ -84,7 +49,7 @@ export function caveLevelEntDraw(
   // c2d.closePath()
 }
 
-export function caveLevelEntUpdate(lvl: CaveLevelEnt, game: Game): void {
+export function caveLevelEntUpdate(_lvl: CaveLevelEnt, _game: Game): void {
   // if (
   //   (state.init && state.p1.t2 !== state.author.t2) ||
   //   state.completed ||

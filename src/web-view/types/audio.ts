@@ -12,7 +12,7 @@ export async function Audio(assets: Readonly<Assets>): Promise<Audio> {
 export function audioPlay(
   ctx: AudioContext,
   buf: AudioBuffer,
-  drop: boolean = false
+  drop: boolean = true
 ): void {
   if (drop && ctx.state !== 'running') return // prevent queuing sounds.
 

@@ -35,6 +35,9 @@ export function pathStatusEntDraw(
   c2d.lineWidth = 3
   c2d.strokeStyle = '#f2f2f2'
   for (const [i, node] of path.nodes.entries()) {
+    // what
+    node.phase!
+
     c2d.beginPath()
     c2d.arc(
       stat.x + i * (64 - nodeRadiusPx) + nodeRadiusPx,

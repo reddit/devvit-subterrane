@@ -1,3 +1,5 @@
+// hack: TIDs should be exported from @devvit/public-api.
+
 /** Reddit user ID. */
 export type T2 = `t2_${string}`
 /** Reddit post ID. */
