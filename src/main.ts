@@ -2,11 +2,19 @@ import {
   type Context,
   Devvit,
   type FormKey,
-  type FormOnSubmitEvent
+  type FormOnSubmitEvent,
+  type JobContext
 } from '@devvit/public-api'
 import {App} from './devvit/app.tsx'
+import {navigateToPost} from './devvit/crap-util.ts'
 import {r2CreatePost} from './devvit/r2.tsx'
-import {T2} from './shared/types/tid.ts'
+import {PostRecord} from './devvit/record.ts'
+import {
+  PostSeed,
+  redisQueryP1,
+  redisSetPlayer,
+  redisSetPost
+} from './devvit/redis.ts'
 
 const newPostScheduleJob: string = 'NewPostSchedule'
 
@@ -15,10 +23,7 @@ Devvit.addCustomPostType({name: 'Cave', height: 'regular', render: App})
 Devvit.addMenuItem({
   label: 'New Subterrane Cave Post',
   location: 'subreddit',
-  onPress: (_ev, ctx) => {
-    if (!ctx.userId) throw Error('no T2')
-    r2CreatePost(ctx, T2(ctx.userId), 'UI')
-  }
+  onPress: async (_ev, ctx) => createPost(ctx, 'UI')
 })
 
 const postScheduleForm: FormKey = Devvit.createForm(
@@ -71,10 +76,7 @@ async function onSavePostSchedule(
 
 Devvit.addSchedulerJob<undefined>({
   name: newPostScheduleJob,
-  onRun: (_ev, ctx) => {
-    if (!ctx.userId) throw Error('no T2')
-    r2CreatePost(ctx, T2(ctx.userId), 'NoUI')
-  }
+  onRun: (_ev, ctx) => createPost(ctx, 'NoUI')
 })
 
 Devvit.addMenuItem({
@@ -86,5 +88,21 @@ Devvit.addMenuItem({
 // to-do: probably better to schema upgrade when viewing a post than on app
 // upgrade trigger to avoid having to partition across scheduled jobs? should
 // include post.setCustomPostPreview(…).
+
+async function createPost(
+  ctx: Context | JobContext,
+  mode: 'UI' | 'NoUI'
+): Promise<void> {
+  const seed = PostSeed()
+  const r2Post = await r2CreatePost(ctx, seed)
+  const post = PostRecord(r2Post, seed)
+  const p1 = await redisQueryP1(ctx)
+  p1.discovered.push(post.t3)
+  await Promise.all([
+    redisSetPost(ctx.redis, post),
+    redisSetPlayer(ctx.redis, p1)
+  ])
+  if (mode === 'UI') navigateToPost(ctx as Context, r2Post, post)
+}
 
 export default Devvit

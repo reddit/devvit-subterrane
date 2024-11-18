@@ -1,12 +1,11 @@
 import {Inven} from './inven.ts'
-import type {T2} from './tid.ts'
+import type {T2, T3} from './tid.ts'
 
 export const playerDefaultMaxHP: number = 30
 
 export type Player = Profile & {
-  cavesEntered: number
-  /** posts created. */
-  cavesFound: number
+  /** caves / posts created. */
+  discovered: T3[]
   /** health points. */
   hp: number
   hpMax: number
@@ -14,6 +13,7 @@ export type Player = Profile & {
   /** experience points. */
   xp: number
   inven: Inven
+  journey: T3[]
 }
 
 export type Profile = {
@@ -27,8 +27,8 @@ export type Profile = {
 
 export function Player(profile: Readonly<Profile>): Player {
   return {
-    cavesEntered: 0,
-    cavesFound: 0,
+    discovered: [],
+    journey: [],
     hp: playerDefaultMaxHP,
     hpMax: playerDefaultMaxHP,
     xp: 0,

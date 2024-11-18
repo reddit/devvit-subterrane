@@ -3,18 +3,21 @@ import {Devvit} from '@devvit/public-api'
 import type {Context, UseStateResult} from '@devvit/public-api'
 import {paletteBlack80} from '../shared/theme.js'
 import type {DevvitMessage, WebViewMessage} from '../shared/types/message.js'
-import {Player} from '../shared/types/player.js'
+import type {Player} from '../shared/types/player.js'
 import {T2, T3, anonSnoovatarURL, anonUsername} from '../shared/types/tid.js'
+import {navigateToPost} from './crap-util.js'
+import {Leaderboard} from './leaderboard.js'
 import {r2CreatePost} from './r2.js'
+import {PlayRecord, PostRecord} from './record.js'
 import {
-  PlayRecord,
-  type PostRecord,
+  PostSeed,
   T3T2,
   redisCreatePlay,
+  redisQueryP1,
   redisQueryPlay,
-  redisQueryPlayer,
   redisQueryPost,
-  redisSetPlayer
+  redisSetPlayer,
+  redisSetPost
 } from './redis.js'
 import {useState2} from './use-state2.js'
 
@@ -27,7 +30,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
   // PlayerRecord is a irreconcilable save slot. defer loading to decrease the
   // chance of overwriting another session.
-  let [p1, setP1] = useState2<Player | undefined>(undefined)
+  const [p1, setP1] = useState2<Player | undefined>(undefined)
 
   if (!ctx.userId) throw Error('no T2')
   const t2 = T2(ctx.userId)
@@ -36,36 +39,11 @@ export function App(ctx: Devvit.Context): JSX.Element {
   )
 
   const [launch, setLaunch] = useState2(false)
-  const [clicked, setClicked] = useState2(false)
-  if (launch) {
-    return (
-      // hack: avoid fouc.
-      <vstack
-        width='100%'
-        height='100%'
-        alignment='middle center'
-        backgroundColor={paletteBlack80}
-      >
-        {/* to-do: migrate to no-ID postMessage(). */}
-        <webview
-          id='web-view'
-          onMessage={msg =>
-            onMsg(
-              ctx,
-              debug,
-              [p1, setP1],
-              [play, setPlay],
-              post,
-              msg as WebViewMessage
-            )
-          }
-          url='index.html'
-          width='100%'
-          height='100%'
-        />
-      </vstack>
-    )
-  }
+  const [loading, setLoading] = useState2(false)
+  const [leaderboard, setLeaderboard] = useState2(false)
+
+  if (launch) return WebView(ctx, debug, [p1, setP1], [play, setPlay], post)
+  if (leaderboard) return <Leaderboard onBack={() => setLeaderboard(false)} />
 
   return (
     <vstack
@@ -88,32 +66,75 @@ export function App(ctx: Devvit.Context): JSX.Element {
         width='100%'
         alignment='middle center'
         backgroundColor={paletteBlack80}
-        gap='large'
+        gap='medium'
         padding='large'
       >
         {/* biome-ignore lint/a11y/useButtonType: */}
         <button
           appearance='primary'
-          disabled={clicked}
+          disabled={loading}
           size='large'
           minWidth='160px'
           icon={play == null ? 'play-fill' : 'new-fill'}
           onPress={async () => {
-            setClicked(true)
-            if (clicked) return // hack: disabled isn't fast enough.
+            setLoading(true)
+            if (loading) return // hack: disabled isn't fast enough.
             if (play == null) setLaunch(true)
-            else {
-              if (!p1) p1 = await P1(ctx)
-              p1.cavesFound++
-              setP1(p1)
-              // to-do: add loading state.
-              await r2CreatePost(ctx, p1, 'UI')
-            }
+            else await createPost(ctx, [p1, setP1])
           }}
         >
           {play == null ? 'play' : 'new game'}
         </button>
+        {/* biome-ignore lint/a11y/useButtonType: */}
+        <button
+          appearance='media'
+          disabled={loading}
+          size='large'
+          minWidth='160px'
+          icon={'dashboard-fill'}
+          onPress={() => {
+            if (loading) return // hack: disabled isn't fast enough.
+            setLeaderboard(true) // to-do: why is this circuit breaking?
+          }}
+        >
+          leaderboard
+        </button>
       </vstack>
+    </vstack>
+  )
+}
+
+function WebView(
+  ctx: Devvit.Context,
+  debug: boolean,
+  [p1, setP1]: UseStateResult<Player | undefined>,
+  [play, setPlay]: UseStateResult<PlayRecord | undefined>,
+  post: PostRecord
+): JSX.Element {
+  return (
+    <vstack
+      width='100%'
+      height='100%'
+      alignment='middle center'
+      backgroundColor={paletteBlack80}
+    >
+      {/* to-do: migrate to no-ID postMessage(). */}
+      <webview
+        id='web-view'
+        onMessage={msg =>
+          onMsg(
+            ctx,
+            debug,
+            [p1, setP1],
+            [play, setPlay],
+            post,
+            msg as WebViewMessage
+          )
+        }
+        url='index.html'
+        width='100%'
+        height='100%'
+      />
     </vstack>
   )
 }
@@ -134,12 +155,12 @@ async function onMsg(
   switch (msg.type) {
     case 'Loaded': {
       // hack: state setter isn't working.
-      p1 = await P1(ctx)
-      p1.cavesEntered++
+      p1 = await redisQueryP1(ctx)
+      p1.journey.push(post.t3)
       setP1(p1)
       play = PlayRecord(p1.t2, post.t3)
       setPlay(play)
-      await redisCreatePlay(ctx.redis, p1, play)
+      await redisCreatePlay(ctx.redis, play, p1.t2)
       const author = await ctx.reddit.getUserById(post.author)
       // to-do: migrate to no-ID postMessage().
       ctx.ui.webView.postMessage<DevvitMessage>('web-view', {
@@ -162,30 +183,37 @@ async function onMsg(
       // to-do: exit web view for perf.
       await redisSetPlayer(ctx.redis, p1)
       break
-    case 'NewGame':
+    case 'NewGame': {
       if (!p1) throw Error('no P1')
-      p1.cavesFound++
+      const post = await createPost(ctx, [p1, setP1])
+      p1.discovered.push(post.t3)
+      await redisSetPlayer(ctx.redis, p1)
       setP1(p1)
       // to-do: exit web view for perf.
       // to-do: notify in game UI too and disable button.
-      await r2CreatePost(ctx, p1, 'UI')
       break
+    }
     default:
       msg satisfies never
       break
   }
 }
 
-async function P1(ctx: Context): Promise<Player> {
-  if (!ctx.userId) throw Error('no T2')
-  const t2 = T2(ctx.userId)
-  let p1 = await redisQueryPlayer(ctx.redis, t2)
-  if (!p1) {
-    const user = await ctx.reddit.getCurrentUser()
-    // hack: why can't this be propulated in User?
-    const snoovatarURL = (await user?.getSnoovatarUrl()) ?? anonSnoovatarURL
-    p1 = Player({snoovatarURL, t2, username: user?.username ?? anonUsername})
-    await redisSetPlayer(ctx.redis, p1)
-  }
-  return p1
+// to-do: add loading state to cue user.
+async function createPost(
+  ctx: Context,
+  [p1, setP1]: UseStateResult<Player | undefined>
+): Promise<PostRecord> {
+  const seed = PostSeed()
+  const r2Post = await r2CreatePost(ctx, seed)
+  const post = PostRecord(r2Post, seed)
+  if (!p1) p1 = await redisQueryP1(ctx)
+  p1.discovered.push(post.t3)
+  setP1(p1)
+  await Promise.all([
+    redisSetPost(ctx.redis, post),
+    redisSetPlayer(ctx.redis, p1)
+  ])
+  navigateToPost(ctx, r2Post, post)
+  return post
 }
