@@ -6,7 +6,7 @@ import {
   type JobContext
 } from '@devvit/public-api'
 import {App} from './devvit/app.tsx'
-import {navigateToPost} from './devvit/crap-util.ts'
+import {navigateToPost} from './devvit/post-util.ts'
 import {r2CreatePost} from './devvit/r2.tsx'
 import {PostRecord} from './devvit/record.ts'
 import {
